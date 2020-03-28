@@ -4,12 +4,13 @@ import org.jetbrains.dummy.lang.tree.*
 
 class VariableInitializationChecker(private val reporter: DiagnosticReporter) : AbstractChecker() {
     override fun inspect(file: File) {
-        file.accept(VariableInitializationVisitor, mutableMapOf())
+        file.accept(VariableInitializationVisitor, Context(mutableMapOf(), mutableMapOf()))
             .forEach {
                 when (it) {
                     is AccessProblem -> reportAccessBeforeInitialization(it.variableAccess)
                     is InitializationProblem -> reportEmptyInitializationExpression(it.initializer)
-                    is DeclarationProblem -> reportDeclarationNotFound(it.variableAccess)
+                    is MissingDeclarationProblem -> reportDeclarationNotFound(it.variableAccess)
+                    is DuplicateDeclarationProblem -> reportDuplicateDeclaration(it.variableDeclaration)
                 }
             }
     }
@@ -25,144 +26,127 @@ class VariableInitializationChecker(private val reporter: DiagnosticReporter) : 
     private fun reportDeclarationNotFound(access: VariableAccess) {
         reporter.report(access, "Variable declaration not found: '${access.name}'")
     }
+
+    private fun reportDuplicateDeclaration(declaration: VariableDeclaration) {
+        reporter.report(declaration, "Variable '${declaration.name}' cannot be redeclared")
+    }
+}
+
+typealias VariablesInitialized = MutableMap<String, Boolean>
+
+private class Context(val outerVars: VariablesInitialized, val localVars: VariablesInitialized) {
+    fun createInnerContext(): Context =
+        Context(mutableMapOf<String, Boolean>().apply {
+            putAll(localVars)
+            putAll(outerVars.filterNot { localVars.containsKey(it.key) })
+        }, mutableMapOf())
+
+    fun updateOuterContext(outerContext: Context) = outerVars.forEach {
+        when (outerContext.localVars.containsKey(it.key)) {
+            true -> outerContext.localVars
+            false -> outerContext.outerVars
+        }[it.key] = it.value
+    }
 }
 
 private class AccessProblem(val variableAccess: VariableAccess) : VisitProblem
 private class InitializationProblem(val initializer: Expression) : VisitProblem
-private class DeclarationProblem(val variableAccess: VariableAccess) : VisitProblem
+private class MissingDeclarationProblem(val variableAccess: VariableAccess) : VisitProblem
+private class DuplicateDeclarationProblem(val variableDeclaration: VariableDeclaration) : VisitProblem
 
 private object VariableInitializationVisitor :
-    RoutedCollectingVisitor<VisitProblem, MutableMap<String, Boolean>>() {
+    RoutedCollectingVisitor<VisitProblem, Context>() {
 
     override fun visitFunctionDeclaration(
         functionDeclaration: FunctionDeclaration,
-        data: MutableMap<String, Boolean>
+        data: Context
     ): Iterable<VisitProblem> {
-        val variableData = mutableMapOf<String, Boolean>()
-        functionDeclaration.parameters.forEach { variableData[it] = true }
-        return super.visitFunctionDeclaration(functionDeclaration, variableData)
+        val parameters = mutableMapOf<String, Boolean>()
+        functionDeclaration.parameters.forEach { parameters[it] = true }
+        return super.visitFunctionDeclaration(functionDeclaration, Context(mutableMapOf(), parameters))
     }
 
-    override fun visitBlock(block: Block, data: MutableMap<String, Boolean>): Iterable<VisitProblem> {
-        val varsKnownOutside: Set<String> = mutableSetOf<String>().apply { addAll(data.keys) }
-        val result = super.visitBlock(block, data)
-
-        // remove all variables local to this block
-        data.keys
-            .filterNot { varsKnownOutside.contains(it) }
-            .forEach {
-                if (it.startsWith("!")) // these variables shadowed some varsKnownOutside
-                // variable names must not contain '!', so this substring must work without exceptions
-                    it.substring(it.lastIndexOf('!') + 1)
-                        .apply { unshadow(this, data) }
-                else data.remove(it)
-            }
-
-        return result
-    }
-
-    override fun visitAssignment(
-        assignment: Assignment,
-        data: MutableMap<String, Boolean>
-    ): Iterable<VisitProblem> {
-        var initializerIsBad = false
-        if (data.containsKey(assignment.variable)) {
-            initializerIsBad = !assignment.rhs.accept(EvaluationVisitor(), false)
-            data[assignment.variable] = true
+    override fun visitBlock(block: Block, data: Context): Iterable<VisitProblem> {
+        val blockContext = data.createInnerContext()
+        return super.visitBlock(block, blockContext).also {
+            blockContext.updateOuterContext(data)
         }
+    }
 
-        val initializerProblems = super.visitAssignment(assignment, data)
-        return if (initializerIsBad)
-            initializerProblems.toMutableList().apply {
-                add(InitializationProblem(assignment.rhs))
-            }
-        else initializerProblems
+    override fun visitAssignment(assignment: Assignment, data: Context): Iterable<VisitProblem> {
+        val problems = arrayListOf<VisitProblem>()
+
+        val initializerIsBad = !assignment.rhs.accept(EvaluationVisitor(), false)
+        if (initializerIsBad)
+            problems.add(InitializationProblem(assignment.rhs))
+
+        listOf(data.localVars, data.outerVars)
+            .firstOrNull { it.containsKey(assignment.variable) }
+            ?.set(assignment.variable, true)
+            ?: problems.add(MissingDeclarationProblem(VariableAccess(assignment.line, assignment.variable)))
+
+        return problems.apply {
+            addAll(super.visitAssignment(assignment, data))
+        }
     }
 
     // TODO fail redeclaration
     override fun visitVariableDeclaration(
         variableDeclaration: VariableDeclaration,
-        data: MutableMap<String, Boolean>
+        data: Context
     ): Iterable<VisitProblem> {
-        var initializerIsBad: Boolean
-        with(variableDeclaration) {
-            initializerIsBad = initializer != null && !initializer.accept(EvaluationVisitor(), false)
-            declareVariable(name, initializer != null, data)
-        }
-        val initializerProblems = super.visitVariableDeclaration(variableDeclaration, data)
+        val problems = arrayListOf<VisitProblem>()
 
-        return if (initializerIsBad)
-            initializerProblems.toMutableList().apply {
-                add(InitializationProblem(variableDeclaration.initializer!!))
-            }
-        else initializerProblems
+        val initializerIsBad = variableDeclaration.initializer
+            ?.accept(EvaluationVisitor(), false)?.not()
+            ?: false
+        if (initializerIsBad)
+            problems.add(InitializationProblem(variableDeclaration.initializer!!))
+
+        if (data.localVars.containsKey(variableDeclaration.name)) {
+            problems.add(DuplicateDeclarationProblem(variableDeclaration))
+        }
+        data.localVars[variableDeclaration.name] = variableDeclaration.initializer != null
+
+        return problems.apply {
+            addAll(super.visitVariableDeclaration(variableDeclaration, data))
+        }
     }
 
-    // TODO check if shadowing works (data.containsKey() should work even if value is null)
-    /**
-     * @return Returns **true** if variable declaration caused shadowing
-     */
-    fun declareVariable(name: String, initialized: Boolean, data: MutableMap<String, Boolean>): Boolean {
-        var shadowingName = name
-        var shadowingValue = initialized
-
-        var didShadowing = false
-        while (data.containsKey(shadowingName)) {
-            didShadowing = true
-            val shadowedName = "!$shadowingName"
-
-            val shadowedValue = data[shadowingName]!!
-            data[shadowingName] = shadowingValue
-
-            shadowingValue = shadowedValue
-            shadowingName = shadowedName
-        }
-        data[shadowingName] = shadowingValue
-        return didShadowing
-    }
-
-    fun unshadow(name: String, data: MutableMap<String, Boolean>) {
-        var shadowedName = name
-        while (data.containsKey("!$shadowedName")) {
-            data[shadowedName] = data["!$shadowedName"]!!
-            shadowedName = "!$shadowedName"
-        }
-        data.remove(shadowedName)
-    }
-
-    override fun visitIfStatement(
-        ifStatement: IfStatement,
-        data: MutableMap<String, Boolean>
-    ): Iterable<VisitProblem> {
+    override fun visitIfStatement(ifStatement: IfStatement, data: Context): Iterable<VisitProblem> {
         val elseBlock = ifStatement.elseBlock
-        if (elseBlock != null) {
-            val dataCopy = mutableMapOf<String, Boolean>().apply { putAll(data) }
-            val thenProblems = ifStatement.thenBlock.accept(this, data)
-            val elseProblems = elseBlock.accept(this, dataCopy)
+        if (elseBlock == null) {
+            return mutableListOf<VisitProblem>().apply {
+                addAll(ifStatement.condition.accept(this@VariableInitializationVisitor, data))
+                addAll(ifStatement.thenBlock.accept(this@VariableInitializationVisitor, data))
+            }
+        } else {
+            val thenContext = data.createInnerContext()
+            val elseContext = data.createInnerContext()
+            val thenProblems = ifStatement.thenBlock.accept(this, thenContext)
+            val elseProblems = elseBlock.accept(this, elseContext)
 
             // consider variable initialized if and only if it was initialized in both blocks
-            data.keys.forEach {
-                data[it] = data[it]!! && dataCopy[it]!! // variable cannot be deleted from inside a block
+            elseContext.outerVars.forEach { (k, v) ->
+                thenContext.outerVars.merge(k, v, Boolean::and)
             }
+            thenContext.updateOuterContext(data)
+
             return mutableListOf<VisitProblem>().apply {
                 addAll(ifStatement.condition.accept(this@VariableInitializationVisitor, data))
                 addAll(thenProblems)
                 addAll(elseProblems)
             }
-        } else {
-            return mutableListOf<VisitProblem>().apply {
-                addAll(ifStatement.condition.accept(this@VariableInitializationVisitor, data))
-                addAll(ifStatement.thenBlock.accept(this@VariableInitializationVisitor, data))
-            }
         }
     }
 
-    override fun visitVariableAccess(
-        variableAccess: VariableAccess,
-        data: MutableMap<String, Boolean>
-    ): Iterable<VisitProblem> = when (data[variableAccess.name]) {
-        true -> emptyList()
-        false -> listOf(AccessProblem(variableAccess))
-        null -> listOf(DeclarationProblem(variableAccess))
-    }
+    override fun visitVariableAccess(variableAccess: VariableAccess, data: Context): Iterable<VisitProblem> =
+        listOf(data.localVars, data.outerVars)
+            .firstOrNull { it.containsKey(variableAccess.name) }
+            ?.run {
+                when (this[variableAccess.name]!!) {
+                    true -> emptyList()
+                    false -> listOf(AccessProblem(variableAccess))
+                }
+            } ?: listOf(MissingDeclarationProblem(variableAccess))
 }

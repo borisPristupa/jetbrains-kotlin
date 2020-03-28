@@ -27,7 +27,7 @@ fun empty_initializer_problem() {
     b = does_return(); // should work
 }
 
-fun declaration_problem(param) {
+fun missing_declaration_problem(param) {
     check_access(param); // should work
     check_access(x); // should fail
 
@@ -37,6 +37,7 @@ fun declaration_problem(param) {
         var x = true;
     }
 
+    x = 5; // should fail
     check_access(x); // should fail
     var x = 5;
     check_access(x); // should work
@@ -81,4 +82,14 @@ fun access_problem(param) {
         c = false;
     }
     check_access(c); // should work
+}
+
+fun duplicate_declaration_problem() {
+    var a;
+    var a = 4; // should fail
+
+    if (a) {
+        var a = 4; // should work
+        var a; // should fail
+    }
 }
