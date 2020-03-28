@@ -1,0 +1,84 @@
+fun check_access(x) {
+    var try_assign = x;
+}
+
+fun does_return() {
+    var a = true;
+    if (a) {
+        return true;
+    } else {
+        return a;
+    }
+}
+
+fun does_not_return() {
+    var a = true;
+    if (a) {
+        return true;
+    } else {
+        return check_access(a);
+    }
+}
+
+fun empty_initializer_problem() {
+    var a = does_not_return(); // should fail
+    var b;
+    b = does_not_return(); // should fail
+    b = does_return(); // should work
+}
+
+fun declaration_problem(param) {
+    check_access(param); // should work
+    check_access(x); // should fail
+
+    if (x) { // should fail
+        var x = false;
+    } else {
+        var x = true;
+    }
+
+    check_access(x); // should fail
+    var x = 5;
+    check_access(x); // should work
+}
+
+fun access_problem(param) {
+    check_access(param); // should work
+
+    var a;
+    if (param) {
+        var a;
+        check_access(a); // should fail
+        a = 5;
+        check_access(a); // should work
+    } else {
+        var a = 5;
+        check_access(a); // should work
+    }
+
+    var b = 5;
+    if (a) { // should fail
+        check_access(b); // should work
+        var b;
+        check_access(b); // should fail
+        b = 6;
+        check_access(b); // should work
+    }
+
+    b = a; // should fail
+
+    var c;
+    if (param) {
+        c = 5;
+    } else {
+        var c = 5;
+    }
+    check_access(c); // should fail
+
+    if (param) {
+        c = true;
+    } else {
+        c = false;
+    }
+    check_access(c); // should work
+}

@@ -12,4 +12,9 @@ class DummyLanguageTestGenerated : AbstractDummyLanguageTest() {
     fun testGood() {
         doTest("testData/good.dummy")
     }
+    
+    @Test
+    fun testVariable_scope() {
+        doTest("testData/variable_scope.dummy")
+    }
 }

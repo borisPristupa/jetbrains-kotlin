@@ -1,4 +1,4 @@
-// Generated from org/jetbrains/dummy/lang/DummyLanguage.g4 by ANTLR 4.7.2
+// Generated from org\jetbrains\dummy\lang\DummyLanguage.g4 by ANTLR 4.7.2
 
 package org.jetbrains.dummy.lang;
 
@@ -39,8 +39,7 @@ public class DummyLanguageParser extends Parser {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'var'", "'if'", "'else'", "'true'", "'false'", "'{'", "'}'", "'fun'", 
-			null, null, null, null, null, null, "';'", "'('", "')'", "'='", "','", 
-			"'return'"
+			null, null, null, null, null, null, "';'", "'('", "')'", "'='", "','"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();

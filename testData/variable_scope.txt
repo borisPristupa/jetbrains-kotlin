@@ -1,0 +1,10 @@
+ERROR: line 24: Empty expression cannot be used for initialization
+ERROR: line 26: Empty expression cannot be used for initialization
+ERROR: line 32: Variable declaration not found: 'x'
+ERROR: line 34: Variable declaration not found: 'x'
+ERROR: line 40: Variable declaration not found: 'x'
+ERROR: line 51: Variable 'a' is accessed before initialization
+ERROR: line 60: Variable 'a' is accessed before initialization
+ERROR: line 63: Variable 'b' is accessed before initialization
+ERROR: line 68: Variable 'a' is accessed before initialization
+ERROR: line 76: Variable 'c' is accessed before initialization

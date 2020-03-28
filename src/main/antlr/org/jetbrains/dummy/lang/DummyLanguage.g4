@@ -139,5 +139,5 @@ COMMA
     ;
 
 RETURN
-    : 'return'
+    : 'return' ' '+
     ;

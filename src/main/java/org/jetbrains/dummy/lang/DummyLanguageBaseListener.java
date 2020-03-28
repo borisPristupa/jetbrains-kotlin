@@ -1,4 +1,4 @@
-// Generated from org/jetbrains/dummy/lang/DummyLanguage.g4 by ANTLR 4.7.2
+// Generated from org\jetbrains\dummy\lang\DummyLanguage.g4 by ANTLR 4.7.2
 
 package org.jetbrains.dummy.lang;
 
