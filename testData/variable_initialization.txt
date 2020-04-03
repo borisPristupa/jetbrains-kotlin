@@ -1,0 +1,3 @@
+ERROR: line 34: The expression is empty and cannot be used to initialize a variable
+ERROR: line 36: The expression is empty and cannot be used to initialize a variable
+ERROR: line 39: The expression is empty and cannot be used to initialize a variable

@@ -21,9 +21,9 @@ public class DummyLanguageParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		VAR=1, IF=2, ELSE=3, TRUE=4, FALSE=5, BEGIN=6, END=7, FUN=8, ID=9, NUMBER=10, 
-		DIGIT=11, WS=12, SINGLE_COMMENT=13, MULTI_COMMENT=14, SEMICOLON=15, LEFT_BR=16, 
-		RIGHT_BR=17, ASSIGN=18, COMMA=19, RETURN=20;
+		VAR=1, IF=2, ELSE=3, TRUE=4, FALSE=5, BEGIN=6, END=7, FUN=8, RETURN=9, 
+		ID=10, NUMBER=11, DIGIT=12, WS=13, SINGLE_COMMENT=14, MULTI_COMMENT=15, 
+		SEMICOLON=16, LEFT_BR=17, RIGHT_BR=18, ASSIGN=19, COMMA=20;
 	public static final int
 		RULE_prog = 0, RULE_func_def = 1, RULE_block = 2, RULE_stat = 3, RULE_return_statement = 4, 
 		RULE_if_statement = 5, RULE_assign = 6, RULE_var_def = 7, RULE_func = 8, 
@@ -39,15 +39,16 @@ public class DummyLanguageParser extends Parser {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'var'", "'if'", "'else'", "'true'", "'false'", "'{'", "'}'", "'fun'", 
-			null, null, null, null, null, null, "';'", "'('", "')'", "'='", "','"
+			"'return'", null, null, null, null, null, null, "';'", "'('", "')'", 
+			"'='", "','"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
-			null, "VAR", "IF", "ELSE", "TRUE", "FALSE", "BEGIN", "END", "FUN", "ID", 
-			"NUMBER", "DIGIT", "WS", "SINGLE_COMMENT", "MULTI_COMMENT", "SEMICOLON", 
-			"LEFT_BR", "RIGHT_BR", "ASSIGN", "COMMA", "RETURN"
+			null, "VAR", "IF", "ELSE", "TRUE", "FALSE", "BEGIN", "END", "FUN", "RETURN", 
+			"ID", "NUMBER", "DIGIT", "WS", "SINGLE_COMMENT", "MULTI_COMMENT", "SEMICOLON", 
+			"LEFT_BR", "RIGHT_BR", "ASSIGN", "COMMA"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -276,7 +277,7 @@ public class DummyLanguageParser extends Parser {
 			setState(48);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << VAR) | (1L << IF) | (1L << TRUE) | (1L << FALSE) | (1L << ID) | (1L << NUMBER) | (1L << RETURN))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << VAR) | (1L << IF) | (1L << TRUE) | (1L << FALSE) | (1L << RETURN) | (1L << ID) | (1L << NUMBER))) != 0)) {
 				{
 				{
 				setState(45);
@@ -873,25 +874,24 @@ public class DummyLanguageParser extends Parser {
 		">\3\2\2\2\n@\3\2\2\2\fF\3\2\2\2\16O\3\2\2\2\20T\3\2\2\2\22\\\3\2\2\2\24"+
 		"o\3\2\2\2\26q\3\2\2\2\30\32\5\4\3\2\31\30\3\2\2\2\32\35\3\2\2\2\33\31"+
 		"\3\2\2\2\33\34\3\2\2\2\34\3\3\2\2\2\35\33\3\2\2\2\36\37\7\n\2\2\37 \7"+
-		"\13\2\2 )\7\22\2\2!&\7\13\2\2\"#\7\25\2\2#%\7\13\2\2$\"\3\2\2\2%(\3\2"+
-		"\2\2&$\3\2\2\2&\'\3\2\2\2\'*\3\2\2\2(&\3\2\2\2)!\3\2\2\2)*\3\2\2\2*+\3"+
-		"\2\2\2+,\7\23\2\2,-\5\6\4\2-\5\3\2\2\2.\62\7\b\2\2/\61\5\b\5\2\60/\3\2"+
-		"\2\2\61\64\3\2\2\2\62\60\3\2\2\2\62\63\3\2\2\2\63\65\3\2\2\2\64\62\3\2"+
-		"\2\2\65\66\7\t\2\2\66\7\3\2\2\2\67?\5\20\t\28?\5\16\b\29:\5\24\13\2:;"+
-		"\7\21\2\2;?\3\2\2\2<?\5\f\7\2=?\5\n\6\2>\67\3\2\2\2>8\3\2\2\2>9\3\2\2"+
-		"\2><\3\2\2\2>=\3\2\2\2?\t\3\2\2\2@B\7\26\2\2AC\5\24\13\2BA\3\2\2\2BC\3"+
-		"\2\2\2CD\3\2\2\2DE\7\21\2\2E\13\3\2\2\2FG\7\4\2\2GH\7\22\2\2HI\5\24\13"+
-		"\2IJ\7\23\2\2JM\5\6\4\2KL\7\5\2\2LN\5\6\4\2MK\3\2\2\2MN\3\2\2\2N\r\3\2"+
-		"\2\2OP\7\13\2\2PQ\7\24\2\2QR\5\24\13\2RS\7\21\2\2S\17\3\2\2\2TU\7\3\2"+
-		"\2UX\7\13\2\2VW\7\24\2\2WY\5\24\13\2XV\3\2\2\2XY\3\2\2\2YZ\3\2\2\2Z[\7"+
-		"\21\2\2[\21\3\2\2\2\\]\7\13\2\2]f\7\22\2\2^c\5\24\13\2_`\7\25\2\2`b\5"+
-		"\24\13\2a_\3\2\2\2be\3\2\2\2ca\3\2\2\2cd\3\2\2\2dg\3\2\2\2ec\3\2\2\2f"+
-		"^\3\2\2\2fg\3\2\2\2gh\3\2\2\2hi\7\23\2\2i\23\3\2\2\2jp\5\26\f\2kp\7\13"+
-		"\2\2lp\7\6\2\2mp\7\7\2\2np\7\f\2\2oj\3\2\2\2ok\3\2\2\2ol\3\2\2\2om\3\2"+
-		"\2\2on\3\2\2\2p\25\3\2\2\2qr\7\13\2\2r{\7\22\2\2sx\5\24\13\2tu\7\25\2"+
-		"\2uw\5\24\13\2vt\3\2\2\2wz\3\2\2\2xv\3\2\2\2xy\3\2\2\2y|\3\2\2\2zx\3\2"+
-		"\2\2{s\3\2\2\2{|\3\2\2\2|}\3\2\2\2}~\7\23\2\2~\27\3\2\2\2\17\33&)\62>"+
-		"BMXcfox{";
+		"\f\2\2 )\7\23\2\2!&\7\f\2\2\"#\7\26\2\2#%\7\f\2\2$\"\3\2\2\2%(\3\2\2\2"+
+		"&$\3\2\2\2&\'\3\2\2\2\'*\3\2\2\2(&\3\2\2\2)!\3\2\2\2)*\3\2\2\2*+\3\2\2"+
+		"\2+,\7\24\2\2,-\5\6\4\2-\5\3\2\2\2.\62\7\b\2\2/\61\5\b\5\2\60/\3\2\2\2"+
+		"\61\64\3\2\2\2\62\60\3\2\2\2\62\63\3\2\2\2\63\65\3\2\2\2\64\62\3\2\2\2"+
+		"\65\66\7\t\2\2\66\7\3\2\2\2\67?\5\20\t\28?\5\16\b\29:\5\24\13\2:;\7\22"+
+		"\2\2;?\3\2\2\2<?\5\f\7\2=?\5\n\6\2>\67\3\2\2\2>8\3\2\2\2>9\3\2\2\2><\3"+
+		"\2\2\2>=\3\2\2\2?\t\3\2\2\2@B\7\13\2\2AC\5\24\13\2BA\3\2\2\2BC\3\2\2\2"+
+		"CD\3\2\2\2DE\7\22\2\2E\13\3\2\2\2FG\7\4\2\2GH\7\23\2\2HI\5\24\13\2IJ\7"+
+		"\24\2\2JM\5\6\4\2KL\7\5\2\2LN\5\6\4\2MK\3\2\2\2MN\3\2\2\2N\r\3\2\2\2O"+
+		"P\7\f\2\2PQ\7\25\2\2QR\5\24\13\2RS\7\22\2\2S\17\3\2\2\2TU\7\3\2\2UX\7"+
+		"\f\2\2VW\7\25\2\2WY\5\24\13\2XV\3\2\2\2XY\3\2\2\2YZ\3\2\2\2Z[\7\22\2\2"+
+		"[\21\3\2\2\2\\]\7\f\2\2]f\7\23\2\2^c\5\24\13\2_`\7\26\2\2`b\5\24\13\2"+
+		"a_\3\2\2\2be\3\2\2\2ca\3\2\2\2cd\3\2\2\2dg\3\2\2\2ec\3\2\2\2f^\3\2\2\2"+
+		"fg\3\2\2\2gh\3\2\2\2hi\7\24\2\2i\23\3\2\2\2jp\5\26\f\2kp\7\f\2\2lp\7\6"+
+		"\2\2mp\7\7\2\2np\7\r\2\2oj\3\2\2\2ok\3\2\2\2ol\3\2\2\2om\3\2\2\2on\3\2"+
+		"\2\2p\25\3\2\2\2qr\7\f\2\2r{\7\23\2\2sx\5\24\13\2tu\7\26\2\2uw\5\24\13"+
+		"\2vt\3\2\2\2wz\3\2\2\2xv\3\2\2\2xy\3\2\2\2y|\3\2\2\2zx\3\2\2\2{s\3\2\2"+
+		"\2{|\3\2\2\2|}\3\2\2\2}~\7\24\2\2~\27\3\2\2\2\17\33&)\62>BMXcfox{";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

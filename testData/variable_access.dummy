@@ -2,31 +2,6 @@ fun check_access(x) {
     var try_assign = x;
 }
 
-fun does_return() {
-    var a = true;
-    if (a) {
-        return true;
-    } else {
-        return a;
-    }
-}
-
-fun does_not_return() {
-    var a = true;
-    if (a) {
-        return true;
-    } else {
-        return check_access(a);
-    }
-}
-
-fun empty_initializer_problem() {
-    var a = does_not_return(); // should fail
-    var b;
-    b = does_not_return(); // should fail
-    b = does_return(); // should work
-}
-
 fun missing_declaration_problem(param) {
     check_access(param); // should work
     check_access(x); // should fail

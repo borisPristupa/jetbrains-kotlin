@@ -1,0 +1,11 @@
+ERROR: line 7: Variable declaration not found: 'x'
+ERROR: line 9: Variable declaration not found: 'x'
+ERROR: line 15: Variable declaration not found: 'x'
+ERROR: line 16: Variable declaration not found: 'x'
+ERROR: line 27: Variable 'a' is accessed before initialization
+ERROR: line 36: Variable 'a' is accessed before initialization
+ERROR: line 39: Variable 'b' is accessed before initialization
+ERROR: line 44: Variable 'a' is accessed before initialization
+ERROR: line 52: Variable 'c' is accessed before initialization
+ERROR: line 64: Variable 'a' cannot be redeclared
+ERROR: line 68: Variable 'a' cannot be redeclared

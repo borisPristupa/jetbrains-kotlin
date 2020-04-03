@@ -1,0 +1,40 @@
+fun does_return(x) {
+    if (x) {
+        return true;
+    } else {
+        return x;
+    }
+}
+
+fun does_not_return(x) {
+    if (x) {
+        return true;
+    } else {
+        return;
+    }
+}
+
+fun does_return_complicated(x) {
+    if (x) {
+        return does_return(x);
+    } else {
+        return false;
+    }
+}
+
+fun does_not_return_complicated(x) {
+    if (x) {
+        return does_return_complicated(x);
+    } else {
+        return does_not_return(x);
+    }
+}
+
+fun empty_initializer_problem() {
+    var a = does_not_return(0); // should fail
+    var b;
+    b = does_not_return(1); // should fail
+    b = does_return(7); // should work
+    b = does_return_complicated(42); // should work
+    a = does_not_return_complicated(1024); // should not work
+}

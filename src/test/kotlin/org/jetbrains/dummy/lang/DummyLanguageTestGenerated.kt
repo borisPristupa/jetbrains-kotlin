@@ -14,7 +14,12 @@ class DummyLanguageTestGenerated : AbstractDummyLanguageTest() {
     }
     
     @Test
-    fun testVariable_scope() {
-        doTest("testData/variable_scope.dummy")
+    fun testVariable_access() {
+        doTest("testData/variable_access.dummy")
+    }
+    
+    @Test
+    fun testVariable_initialization() {
+        doTest("testData/variable_initialization.dummy")
     }
 }
